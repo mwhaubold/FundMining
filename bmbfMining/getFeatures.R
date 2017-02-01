@@ -1,5 +1,6 @@
 # load library
 library(XML)
+library(RKEA)
 
 # define functions for extracting the features
 #get release date
