@@ -1,15 +1,21 @@
+# Libraries
+library(ggplot2)
+
 # load feature list
 load("./featureList.RData")
 
 numberPerYear <- c(46, 49, 63, 93, 96, 88, 120, 104, 88, 113, 83, 132, 160, 18)
-years <- c("2004", "2005", "2006", "2007", "2008", "2009", "2010", "2011", "2012", "2013", "2014", "2015", "2016", "2017")
+years <- c(2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017)
 
-barplot(numberPerYear, names.arg = years, ylim = c(0, 200), col = rgb(0, 101 / 255, 189 / 255), ylab = "Anzahl der Ausschreibungen", xlab = "Jahreszahl")
-abline(h = mean(numberPerYear))
+mydf1 <- data.frame(numberPerYear, years)
 
+#barplot(numberPerYear, names.arg = years, ylim = c(0, 200), col = rgb(0, 101 / 255, 189 / 255), ylab = "Anzahl der Ausschreibungen", xlab = "Jahreszahl")
+#abline(h = mean(numberPerYear))
+
+p1 <- ggplot(mydf1, aes(x = years, y = numberPerYear)) + geom_bar(stat = "identity", fill = rgb(0, 101 / 255, 189 / 255)) + geom_text(aes(label = numberPerYear), color = "black", vjust = -1) + coord_cartesian(xlim = c(2004, 2017)) + theme_light() + labs(x = "Jahreszahl", y = "Anzahl der Ausschreibungen") + geom_hline(yintercept = mean(numberPerYear))
+print(p1)
 
 #print(months(noticeFeatureList[[1]]$releaseDate))
-#print(weekdays(noticeFeatureList[[1]]$releaseDate))
 #print(strftime(noticeFeatureList[[1]]$releaseDate, format="%Y"))
 
 upDaysCoded <- vector("list", length(noticeFeatureList))
@@ -19,4 +25,31 @@ for (i in 1:length(noticeFeatureList)) {
 		upDaysCoded[i] <- switch(uploadedDay, "Montag" = 1, "Dienstag" = 2, "Mittwoch" = 3, "Donnerstag" = 4, "Freitag" = 5, "Samstag" = 6, "Sonntag" = 7)
 	}
 }
+
+mydf2 <- do.call("rbind", upDaysCoded)
+mydf2 <- data.frame(mydf2)
+
+p2 <- ggplot(mydf2, aes(x = mydf2)) + geom_bar(fill = rgb(0, 101 / 255, 189 / 255)) + stat_bin(bins = 7, aes(y = ..count.., label = ..count..), color = "black", geom = "text", vjust = -1) + theme_light() + labs(x = "Wochentage", y = "Anzahl der Ausschreibungen") + scale_x_continuous(breaks = c(1, 2, 3, 4, 5, 6, 7), labels = c("Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag", "Sonntag"))
+print(p2)
+
+# extract mail domain --> "Projektträger"
+domainList <- vector("list", length(noticeFeatureList))
+for (i in 1:length(noticeFeatureList)) {
+	domainList[i] <- gsub(".*@|\\..*", "", noticeFeatureList[[i]]$authority)[1]
+}
+
+uniqueDomainList = unique(domainList)
+
+domainTable <- table(as.character(domainList))
+domainTable <- domainTable[domainTable > 10]
+names(domainTable)[1] <- "Deutsches Elektronen Synchrotron"
+names(domainTable)[2] <- "DLR"
+names(domainTable)[3] <- "Projektträger Jülich"
+names(domainTable)[4] <- "KIT"
+names(domainTable)[5] <- "Kein Projektträger"
+names(domainTable)[6] <- "VDI-TZ"
+names(domainTable)[7] <- "VDI/VDE"
+mydf3 <- as.data.frame(domainTable)
+p3 <- ggplot(mydf3, aes(x = Var1, y = Freq)) + geom_bar(stat = "identity", fill = rgb(0, 101 / 255, 189 / 255)) + geom_text(aes(label = Freq), color = "black", vjust = -1) + theme_light() + labs(x = "Projektträger", y = "Anzahl der Ausschreibungen")
+print(p3)
 
