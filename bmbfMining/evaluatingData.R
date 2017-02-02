@@ -1,5 +1,6 @@
 # Libraries
 library(ggplot2)
+library(stringr)
 
 # load feature list
 load("./featureList.RData")
@@ -53,3 +54,7 @@ mydf3 <- as.data.frame(domainTable)
 p3 <- ggplot(mydf3, aes(x = Var1, y = Freq)) + geom_bar(stat = "identity", fill = rgb(0, 101 / 255, 189 / 255)) + geom_text(aes(label = Freq), color = "black", vjust = -1) + theme_light() + labs(x = "Projektträger", y = "Anzahl der Ausschreibungen")
 print(p3)
 
+
+
+
+###############################################################################################################################
