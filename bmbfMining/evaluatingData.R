@@ -1,6 +1,11 @@
 # Libraries
 library(ggplot2)
 library(stringr)
+library(packcircles)
+library(gridExtra)
+
+
+rm(list = ls())
 
 # load feature list
 load("./featureList.RData")
@@ -41,8 +46,8 @@ for (i in 1:length(noticeFeatureList)) {
 
 uniqueDomainList = unique(domainList)
 
-domainTable <- table(as.character(domainList))
-domainTable <- domainTable[domainTable > 10]
+domainTableFull <- table(as.character(domainList))
+domainTable <- domainTableFull[domainTableFull > 10]
 names(domainTable)[1] <- "Deutsches Elektronen Synchrotron"
 names(domainTable)[2] <- "DLR"
 names(domainTable)[3] <- "Projektträger Jülich"
@@ -57,4 +62,37 @@ print(p3)
 
 
 
-###############################################################################################################################
+ncircles <- length(domainTableFull)
+limits <- c(-50, 50)
+inset <- diff(limits) / 3
+rmax <- 25
+
+rawData <- data.frame(
+  x = runif(ncircles, min(limits) + inset, max(limits) - inset),
+  y = runif(ncircles, min(limits) + inset, max(limits) - inset),
+  r = rbeta(ncircles, 1, 10) * rmax)
+
+myX <- runif(ncircles, min(limits) + inset, max(limits) - inset)
+myY <- runif(ncircles, min(limits) + inset, max(limits) - inset)
+myR <- as.integer(unname(domainTableFull))
+myR <- (myR/max(myR)) * rmax
+mydf4 <- data.frame(myX, myY, myR)
+
+res <- circleLayout(mydf4, limits, limits, maxiter = 1000)
+dat.after <- circlePlotData(res$layout, npoints = 200)
+p4 <- ggplot(dat.after) + geom_polygon(aes(x, y, group = id), lwd = 1, colour = rgb(0, 101 / 255, 189 / 255), fill = rgb(0, 101 / 255, 189 / 255), alpha = 0.1) + coord_equal(xlim = limits, ylim = limits) + theme_void() + theme(axis.text = element_blank(), axis.ticks = element_blank(), axis.title = element_blank())
+print(p4)
+
+
+
+
+
+
+keywordList <- character(length = 0)
+for (i in 1:length(noticeFeatureList)) {
+	keywordList <- c(keywordList, noticeFeatureList[[i]]$keywords)
+}
+
+uniKeywordList <- unique(keywordList)
+keywordHist <- table(keywordList)
+keywordHist <- sort(keywordHist, decreasing = TRUE)

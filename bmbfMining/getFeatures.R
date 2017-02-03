@@ -3,6 +3,8 @@ library(XML)
 library(RKEA)
 library(stringr)
 
+rm(list = ls())
+
 # define functions for extracting the features
 #get release date
 dateExtract <- function(noticeHTML) {
@@ -106,6 +108,7 @@ keywordExtract <- function(noticeHTML, commonWords) {
 
 	keywordsFound <- nounsSeparated[selectKeywords]
 	keywordsFound <- keywordsFound[nchar(keywordsFound) != 0]
+	keywordsFound <- keywordsFound[nchar(keywordsFound) > 3]
 
 	return(keywordsFound)
 }
