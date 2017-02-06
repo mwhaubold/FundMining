@@ -2,6 +2,10 @@
 library(XML)
 library(RKEA)
 library(stringr)
+library(tm)
+library(SnowballC)
+library(wordcloud)
+library(RColorBrewer)
 
 rm(list = ls())
 
@@ -109,6 +113,8 @@ keywordExtract <- function(noticeHTML, commonWords) {
 	keywordsFound <- nounsSeparated[selectKeywords]
 	keywordsFound <- keywordsFound[nchar(keywordsFound) != 0]
 	keywordsFound <- keywordsFound[nchar(keywordsFound) > 3]
+
+	#keywordsFound <- wordStem(keywordsFound, language = "german")
 
 	return(keywordsFound)
 }

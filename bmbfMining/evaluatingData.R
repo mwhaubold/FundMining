@@ -1,5 +1,6 @@
 # Libraries
 library(ggplot2)
+library(XML)
 library(stringr)
 library(packcircles)
 library(gridExtra)
@@ -9,6 +10,45 @@ library(wordcloud)
 library(RColorBrewer)
 
 rm(list = ls())
+
+### functions ###
+titleExtract <- function(noticeHTML) {
+	parsedDoc <- htmlParse(noticeHTML)
+	getTitle <- xpathSApply(parsedDoc, "//div[@class='summary']", xmlValue)
+
+	return(getTitle)
+}
+
+#get keywords from notice title
+keywordExtract <- function(noticeHTML, commonWords) {
+	# get overall title
+	overallTitle <- titleExtract(noticeHTML)
+
+	# remove numbers and special characters from title
+	clearedTitle <- gsub("[0-9]|[[:punct:]]", "", overallTitle)
+
+	# extract words with capital letter
+	clearedTitleNouns <- gsub("\\s[a-z]+\\s", " ", clearedTitle)
+	nounsSeparated <- str_split(clearedTitleNouns, "\\W")
+	nounsSeparated <- do.call("rbind", nounsSeparated)
+
+	selectKeywords <- rep(TRUE, times = length(nounsSeparated))
+	for (i in 1:length(nounsSeparated)) {
+		if (sum(nounsSeparated[i] == commonWords) >= 1) {
+			selectKeywords[i] <- FALSE
+		}
+	}
+
+	keywordsFound <- nounsSeparated[selectKeywords]
+	keywordsFound <- keywordsFound[nchar(keywordsFound) != 0]
+	keywordsFound <- keywordsFound[nchar(keywordsFound) > 3]
+
+	#keywordsFound <- wordStem(keywordsFound, language = "german")
+
+	return(keywordsFound)
+}
+
+### end functions ###
 
 # load feature list
 load("./featureList.RData")
@@ -104,3 +144,30 @@ keywordDataFrame <- as.data.frame(keywordHist)
 myColorPal <- c("#EABD00", "#CB5B5A", "#AC557A", "#8D4C7D", "#6B406E", "#40324F")
 tumColorPal <- c("#98C6EA", "#DAD7CB", "#A2AD00", "#64A0C8", "#E37222")
 wordcloud(words = keywordDataFrame$keywordList, freq = keywordDataFrame$Freq, min.freq = 2, max.words = 200, random.order = FALSE, rot.per = 0.35, colors = tumColorPal)
+
+
+
+
+
+
+
+
+
+commonWords <- readLines("H:/08_Code/EigeneProjekte/FundMining/commonWordList_10k.txt", encoding = "UTF-8")
+for (i in 2004:2017) {
+	filesInFolder <- list.files(paste("F:/OwnScratch/Exchange/BMBF_Ausschreibungen/", toString(i), sep = ""))
+
+	keywordsPerYear <- vector("list", length(filesInFolder))
+	for (ii in 1:length(filesInFolder)) {
+		noticeHTML <- readLines(paste("F:/OwnScratch/Exchange/BMBF_Ausschreibungen/", toString(i), "/", filesInFolder[ii], sep = ""))
+
+		keywordsPerYear[[ii]] <- keywordExtract(noticeHTML, commonWords)
+	}
+	keywordsPerYear <- do.call("rbind", keywordsPerYear)
+
+	keywordHist <- table(keywordsPerYear)
+	keywordHist <- sort(keywordHist, decreasing = TRUE)
+	keywordDataFrame <- as.data.frame(keywordHist)
+	tumColorPal <- c("#98C6EA", "#DAD7CB", "#A2AD00", "#64A0C8", "#E37222")
+	wordcloud(words = keywordDataFrame$keywordList, freq = keywordDataFrame$Freq, min.freq = 2, max.words = 200, random.order = FALSE, rot.per = 0.35, colors = tumColorPal)
+}
