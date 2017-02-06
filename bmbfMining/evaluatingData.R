@@ -143,8 +143,7 @@ keywordHist <- sort(keywordHist, decreasing = TRUE)
 keywordDataFrame <- as.data.frame(keywordHist)
 myColorPal <- c("#EABD00", "#CB5B5A", "#AC557A", "#8D4C7D", "#6B406E", "#40324F")
 tumColorPal <- c("#98C6EA", "#DAD7CB", "#A2AD00", "#64A0C8", "#E37222")
-wordcloud(words = keywordDataFrame$keywordList, freq = keywordDataFrame$Freq, min.freq = 2, max.words = 200, random.order = FALSE, rot.per = 0.35, colors = tumColorPal)
-
+#wordcloud(words = keywordDataFrame$keywordList, freq = keywordDataFrame$Freq, min.freq = 2, max.words = 200, random.order = FALSE, rot.per = 0.35, colors = tumColorPal)
 
 
 
@@ -154,20 +153,19 @@ wordcloud(words = keywordDataFrame$keywordList, freq = keywordDataFrame$Freq, mi
 
 
 commonWords <- readLines("H:/08_Code/EigeneProjekte/FundMining/commonWordList_10k.txt", encoding = "UTF-8")
-for (i in 2004:2017) {
+for (i in 2017:2017) {
 	filesInFolder <- list.files(paste("F:/OwnScratch/Exchange/BMBF_Ausschreibungen/", toString(i), sep = ""))
 
-	keywordsPerYear <- vector("list", length(filesInFolder))
+	keywordsPerYear <- character(length = 0)
 	for (ii in 1:length(filesInFolder)) {
 		noticeHTML <- readLines(paste("F:/OwnScratch/Exchange/BMBF_Ausschreibungen/", toString(i), "/", filesInFolder[ii], sep = ""))
 
-		keywordsPerYear[[ii]] <- keywordExtract(noticeHTML, commonWords)
+		keywordsPerYear <- c(keywordsPerYear, keywordExtract(noticeHTML, commonWords))
 	}
-	keywordsPerYear <- do.call("rbind", keywordsPerYear)
 
-	keywordHist <- table(keywordsPerYear)
-	keywordHist <- sort(keywordHist, decreasing = TRUE)
-	keywordDataFrame <- as.data.frame(keywordHist)
-	tumColorPal <- c("#98C6EA", "#DAD7CB", "#A2AD00", "#64A0C8", "#E37222")
-	wordcloud(words = keywordDataFrame$keywordList, freq = keywordDataFrame$Freq, min.freq = 2, max.words = 200, random.order = FALSE, rot.per = 0.35, colors = tumColorPal)
+	keywordHistPerYear <- table(keywordsPerYear)
+	keywordHistPerYear <- sort(keywordHistPerYear, decreasing = TRUE)
+	keywordDataFramePerYear <- as.data.frame(keywordHistPerYear)
+	
+	wordcloud(words = keywordDataFramePerYear$keywordsPerYear, freq = keywordDataFrame$Freq, min.freq = 2, max.words = 200, random.order = FALSE, rot.per = 0.35, colors = myColorPal)
 }
