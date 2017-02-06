@@ -3,7 +3,10 @@ library(ggplot2)
 library(stringr)
 library(packcircles)
 library(gridExtra)
-
+library(tm)
+library(SnowballC)
+library(wordcloud)
+library(RColorBrewer)
 
 rm(list = ls())
 
@@ -96,3 +99,8 @@ for (i in 1:length(noticeFeatureList)) {
 uniKeywordList <- unique(keywordList)
 keywordHist <- table(keywordList)
 keywordHist <- sort(keywordHist, decreasing = TRUE)
+
+keywordDataFrame <- as.data.frame(keywordHist)
+myColorPal <- c("#EABD00", "#CB5B5A", "#AC557A", "#8D4C7D", "#6B406E", "#40324F")
+tumColorPal <- c("#98C6EA", "#DAD7CB", "#A2AD00", "#64A0C8", "#E37222")
+wordcloud(words = keywordDataFrame$keywordList, freq = keywordDataFrame$Freq, min.freq = 2, max.words = 200, random.order = FALSE, rot.per = 0.35, colors = tumColorPal)
